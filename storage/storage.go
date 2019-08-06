@@ -1,16 +1,16 @@
 // Package storage is a wrapper package designed to simplify utilization
-// of the MongoDB Go driver. It creates an interface that facilitates 
+// of the MongoDB Go driver. It creates an interface that facilitates
 // access to Get, Save, and Info functions related to the database
 // storage and retrieval of shortened urls.
 package storage
 
 import "github.com/mrlynn/shortener/models"
 
-// Storage is an interface which provides details on the utilization of 
+// Storage is an interface which provides details on the utilization of
 // Get, Save and Info routines
 type Storage interface {
 	GetURL(code string) (string, error)
-	SaveUrl(url string) (string, error)
+	SaveURL(url string) (string, error)
 	GetInfo() ([]models.Shortener, error)
 }
 
@@ -25,10 +25,15 @@ func SetStorage(s Storage) {
 	repository = s
 }
 
-// SaveUrl accepts a single url parameter and returns a string containing the 
+// SaveURL accepts a single url parameter and returns a string containing the
 // encoded version of the url that has been saved in the database.
-func SaveUrl(url string) (string, error) {
-	return repository.SaveUrl(url)
+func SaveURL(url string) (string, error) {
+	return repository.SaveURL(url)
+}
+
+// URLExists checks if a string matches the url of a saved, shortened URL.
+func URLExists(url string) (bool, error) {
+	return repository.URLExists(url)
 }
 
 // GetURL retrieves a URL from the database based on the encoded version of that url.

@@ -41,7 +41,9 @@ func NewMongoClient(uri string) (*mongo.Client, error) {
 		return nil, err
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	if err = client.Connect(ctx); err != nil {
 		return nil, err
 	}
@@ -49,12 +51,12 @@ func NewMongoClient(uri string) (*mongo.Client, error) {
 	return client, nil
 }
 
-// SaveUrl is a function that has one receiver of type Repository,
+// SaveURL is a function that has one receiver of type Repository,
 // takes a single url string parameter and generates a shortened url,
 // returning that after it is saved in the database.
 // A call to SaveUrl will result in a document to be created which contains
 // the details of a new generated url.
-func (r Repository) SaveUrl(url string) (string, error) {
+func (r Repository) SaveURL(url string) (string, error) {
 	collection := r.Client.Database(r.DB).Collection(r.Collection)
 
 	id, err := collection.EstimatedDocumentCount(context.TODO())
@@ -67,9 +69,9 @@ func (r Repository) SaveUrl(url string) (string, error) {
 
 	encoded := encoder.Encode(id)
 
-	genUrl := fmt.Sprintf("http://localhost:8080/go/%s", encoded)
+	genURL := fmt.Sprintf("http://localhost:8080/go/%s", encoded)
 
-	insertResult, err := collection.InsertOne(context.TODO(), models.Shortener{ID: id, OriginalURL: url, GeneratedURL: genUrl, Visited: false, Count: 0})
+	insertResult, err := collection.InsertOne(context.TODO(), models.Shortener{ID: id, OriginalURL: url, GeneratedURL: genURL, Visited: false, Count: 0})
 
 	if err != nil {
 		return "", err
@@ -77,7 +79,13 @@ func (r Repository) SaveUrl(url string) (string, error) {
 
 	log.Println("Insert result: ", insertResult.InsertedID)
 
-	return genUrl, nil
+	return genURL, nil
+}
+
+// URLExists is a function that checks the existance of a url in the database
+func (r Repository) URLExists (u string) (bool, error) {
+	filter := bson.D{{"generatedurl", u}}
+	find := 
 }
 
 // GetURL is a function that has one receiver of type Repository, accepts
@@ -86,8 +94,8 @@ func (r Repository) SaveUrl(url string) (string, error) {
 // update of the document stored in the database such that the visit count
 // is incremented by one.
 func (r Repository) GetURL(code string) (string, error) {
-	genUrl := fmt.Sprintf("http://localhost:8080/go/%s", code)
-	filter := bson.D{{"generatedurl", genUrl}}
+	genURL := fmt.Sprintf("http://localhost:8080/go/%s", code)
+	filter := bson.D{{"generatedurl", genURL}}
 
 	update := bson.D{
 		{"$inc", bson.D{

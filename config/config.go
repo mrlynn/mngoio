@@ -1,3 +1,6 @@
+// Config provides access to tunable configuration settings for this app including:
+// Server: What host, and server port should the app listen on?
+// Mongo: URI string for the mongodb instance, the name of the database, and collection
 package config
 
 import (
